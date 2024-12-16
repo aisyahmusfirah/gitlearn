@@ -3,7 +3,7 @@ from tkinter import messagebox
 import random
 
 # Warna-warna tema
-COLORS = {
+colors = {
     "dark_purple": "#4B244A",
     "orange": "#F7941D",
     "cream": "#FEEFC3",
@@ -63,15 +63,15 @@ def login():
 def show_main_menu():
     clear_window()
 
-    tk.Label(root, text="Main Menu", font=("Arial", 24), bg=COLORS["cream"]).pack(pady=20)
+    tk.Label(root, text="Main Menu", font=("Arial", 24), bg=colors["cream"]).pack(pady=20)
 
     tk.Button(
-        root, text="Play Game", font=("Arial", 16), bg=COLORS["dark_purple"], fg=COLORS["white"],
+        root, text="Play Game", font=("Arial", 16), bg=colors["dark_purple"], fg=colors["white"],
         command=start_game
     ).pack(pady=10)
 
     tk.Button(
-        root, text="Add Questions", font=("Arial", 16), bg=COLORS["dark_purple"], fg=COLORS["white"],
+        root, text="Add Questions", font=("Arial", 16), bg=colors["dark_purple"], fg=colors["white"],
         command=add_question
     ).pack(pady=10)
 
@@ -83,67 +83,116 @@ def play_quiz():
     current_question_index = 0
     score = 0
 
+    # Label untuk keterangan soal
+    hint_label = tk.Label(root, text="Apakah kata berikut baku?", font=("Arial", 12), bg=colors["cream"])
+    hint_label.pack(pady=10)
+
+    # Label untuk pertanyaan
+    question_label = tk.Label(root, text="", font=("Arial", 16, "bold"), bg=colors["cream"])
+    question_label.pack(pady=20)
+
+    # Label untuk skor
+    score_label = tk.Label(root, text=f"Score: 0/{len(questions)}", font=("Arial", 12), bg=colors["cream"])
+    score_label.pack(pady=5)
+
+    # Label untuk umpan balik
+    feedback_label = tk.Label(root, text="", font=("Arial", 12), bg=colors["cream"])
+    feedback_label.pack(pady=10)
+
+    # Tombol pilihan
+    true_button = tk.Button(root, text="True", font=("Arial", 16))
+    false_button = tk.Button(root, text="False", font=("Arial", 16))
+    true_button.pack(pady=5)
+    false_button.pack(pady=5)
+
+def play_quiz():
+    current_question_index = 0
+    score = 0
+
+    # Label untuk menampilkan pertanyaan
+    question_label = tk.Label(root, text="", font=("Arial", 16, "bold"), bg=colors["cream"])
+    question_label.pack(pady=20)
+
+    # Label untuk skor
+    score_label = tk.Label(root, text=f"Score: {score}/{len(questions)}", font=("Arial", 14), bg=colors["cream"])
+    score_label.pack(pady=5)
+
+    # Label untuk feedback
+    feedback_label = tk.Label(root, text="", font=("Arial", 12), bg=colors["cream"])
+    feedback_label.pack(pady=10)
+
+    # Tombol pilihan
+    true_button = tk.Button(root, text="True", font=("Arial", 16), bg=colors["dark_purple"], fg=colors["white"])
+    false_button = tk.Button(root, text="False", font=("Arial", 16), bg=colors["dark_purple"], fg=colors["white"])
+
+    true_button.pack(pady=5)
+    false_button.pack(pady=5)
+
     def next_question():
+        nonlocal current_question_index, score
+
         if current_question_index < len(questions):
             question = questions[current_question_index]
-            question_label.config(text=question["question"])
+            question_label.config(text=f"Apakah kata berikut baku?\n\n{question['question']}")
+            feedback_label.config(text="")
 
+            # Periksa jawaban dengan tombol
             def check_answer(user_answer):
                 nonlocal current_question_index, score
-                if user_answer == question["answer"]:
-                    score += 1
-                current_question_index += 1
-                next_question()
 
+                if user_answer == question["answer"]:
+                    feedback_label.config(text="Benar!", font=("Arial", 12, "bold"), fg="green")
+                    score += 1
+                else:
+                    feedback_label.config(text="Salah!", font=("Arial", 12, "bold"), fg="red")
+
+                # Perbarui skor
+                score_label.config(text=f"Score: {score}/{len(questions)}")
+                current_question_index += 1
+
+                # Tunggu 1 detik sebelum soal berikutnya
+                root.after(1000, next_question)
+
+            # Tetapkan fungsi ke tombol True/False
             true_button.config(command=lambda: check_answer(True))
             false_button.config(command=lambda: check_answer(False))
         else:
-            show_result()
+            # Jika semua soal selesai, tampilkan hasil
+            show_result(score)
 
-    def show_result():
+    def show_result(final_score):
         clear_window()
-
         tk.Label(
-            root, text=f"Your score: {score}/{len(questions)}", font=("Arial", 24), bg=COLORS["cream"]
+            root, text=f"Your score: {final_score}/{len(questions)}", font=("Arial", 24), bg=colors["cream"]
         ).pack(pady=20)
 
-        if score > len(questions) // 2:
-            result_text = "True!"
-            color = COLORS["dark_purple"]
+        if final_score > len(questions) // 2:
+            result_text = "Selamat! Kamu menjawab lebih dari 50% benar!"
         else:
-            result_text = "Treat!"
-            color = COLORS["orange"]
+            result_text = "Masih banyak salah, ini treat kamu!"
 
         tk.Label(
-            root, text=result_text, font=("Arial", 32), fg=color
+            root, text=result_text, font=("Arial", 16), fg=colors["dark_purple"], bg=colors["cream"]
         ).pack(pady=10)
 
-        if result_text == "Treat!":
+        if result_text == "Masih banyak salah, ini treat kamu!":
             tk.Label(
-                root, text=random.choice(treats), font=("Arial", 16), bg=COLORS["cream"]
+                root, text=random.choice(treats), font=("Arial", 18, "bold"), bg=colors["cream"]
             ).pack(pady=10)
 
+        # Tombol kembali ke menu utama
         tk.Button(
-            root, text="Back to Menu", font=("Arial", 16), bg=COLORS["dark_purple"], fg=COLORS["white"],
+            root, text="Back to Menu", font=("Arial", 16), bg=colors["dark_purple"], fg=colors["white"],
             command=show_main_menu
         ).pack(pady=20)
 
-    question_label = tk.Label(root, text="", font=("Arial", 16), bg=COLORS["cream"])
-    question_label.pack(pady=20)
-
-    true_button = tk.Button(root, text="True", font=("Arial", 16), bg=COLORS["dark_purple"], fg=COLORS["white"])
-    true_button.pack(pady=10)
-
-    false_button = tk.Button(root, text="False", font=("Arial", 16), bg=COLORS["dark_purple"], fg=COLORS["white"])
-    false_button.pack(pady=10)
-
+    # Mulai dengan soal pertama
     next_question()
-
 
 def add_question():
     clear_window()
 
-    tk.Label(root, text="Add a Question", font=("Arial", 24), bg=COLORS["cream"]).pack(pady=20)
+    tk.Label(root, text="Add a Question", font=("Arial", 24), bg=colors["cream"]).pack(pady=20)
 
     question_entry = tk.Entry(root, font=("Arial", 16))
     question_entry.pack(pady=10)
@@ -163,7 +212,7 @@ def add_question():
             messagebox.showerror("Error", "Please enter a question!")
 
     tk.Button(
-        root, text="Save", font=("Arial", 16), bg=COLORS["dark_purple"], fg=COLORS["white"],
+        root, text="Save", font=("Arial", 16), bg=colors["dark_purple"], fg=colors["white"],
         command=save_question
     ).pack(pady=10)
 
@@ -176,26 +225,25 @@ def clear_window():
 root = tk.Tk()
 root.title("True or Treat")
 root.geometry("600x400")
-root.configure(bg=COLORS["cream"])
+root.configure(bg=colors["cream"])
 
 # Halaman login/register
-tk.Label(root, text="True or Treat", font=("Arial", 24), bg=COLORS["cream"]).pack(pady=20)
+tk.Label(root, text="True or Treat", font=("Arial", 24), bg=colors["cream"]).pack(pady=20)
 
-tk.Label(root, text="Username:", font=("Arial", 16), bg=COLORS["cream"]).pack()
+tk.Label(root, text="Username:", font=("Arial", 16), bg=colors["cream"]).pack()
 username_entry = tk.Entry(root, font=("Arial", 16))
 username_entry.pack(pady=5)
 
-tk.Label(root, text="Password:", font=("Arial", 16), bg=COLORS["cream"]).pack()
+tk.Label(root, text="Password:", font=("Arial", 16), bg=colors["cream"]).pack()
 password_entry = tk.Entry(root, font=("Arial", 16), show="*")
 password_entry.pack(pady=5)
 
 tk.Button(
-    root, text="Register", font=("Arial", 16), bg=COLORS["dark_purple"], fg=COLORS["white"], command=register
+    root, text="Register", font=("Arial", 16), bg=colors["dark_purple"], fg=colors["white"], command=register
 ).pack(pady=10)
 
 tk.Button(
-    root, text="Login", font=("Arial", 16), bg=COLORS["dark_purple"], fg=COLORS["white"], command=login
+    root, text="Login", font=("Arial", 16), bg=colors["dark_purple"], fg=colors["white"], command=login
 ).pack(pady=10)
 
 root.mainloop()
-
