@@ -1,1 +1,201 @@
+import tkinter as tk
+from tkinter import messagebox
+import random
+
+# Warna-warna tema
+COLORS = {
+    "dark_purple": "#4B244A",
+    "orange": "#F7941D",
+    "cream": "#FEEFC3",
+    "black": "#000000",
+    "white": "#FFFFFF",
+}
+
+# Data pengguna dan pertanyaan
+users = {}
+questions = [
+    {"question": "Survey", "answer": False},
+    {"question": "Praktek", "answer": False},
+    {"question": "Frekuensi", "answer": True},
+    {"question": "Nafas", "answer": False},
+    {"question": "Objek", "answer": True},
+    {"question": "Fondasi", "answer": True},
+    {"question": "Atmosfir", "answer": False},
+    {"question": "Karier", "answer": True},
+    {"question": "Aktifitas", "answer": False},
+    {"question": "Apotek", "answer": True}
+]
+treats = [
+    "Kelarin semua tugas sebelum jam 6 sore!",
+    "Bilang i love you ke ibumu.",
+    "Streaming video tentang productivity min. 15 menit.",
+    "Jangan beli gorengan selama 3 hari",
+    "Luangkan 10 menit untuk membaca buku.",
+    "Sedekah untuk Palestina min. 10k.",
+    "Share di status WA postingan tentang Palestina.",
+    "Doakan keselamatan dan kedamaian untuk Palestina hari ini.",
+    "Beliin bestiemu makan siang.",
+    "Baca kitab suci min. 1 halaman.",
+]
+
+
+# Fungsi-fungsi aplikasi
+def register():
+    username = username_entry.get()
+    password = password_entry.get()
+
+    if username in users:
+        messagebox.showerror("Error", "Username already exists!")
+    else:
+        users[username] = password
+        messagebox.showinfo("Success", "Registration successful!")
+
+def login():
+    username = username_entry.get()
+    password = password_entry.get()
+
+    if users.get(username) == password:
+        messagebox.showinfo("Welcome", "Login successful!")
+        show_main_menu()
+    else:
+        messagebox.showerror("Error", "Invalid username or password!")
+
+def show_main_menu():
+    clear_window()
+
+    tk.Label(root, text="Main Menu", font=("Arial", 24), bg=COLORS["cream"]).pack(pady=20)
+
+    tk.Button(
+        root, text="Play Game", font=("Arial", 16), bg=COLORS["dark_purple"], fg=COLORS["white"],
+        command=start_game
+    ).pack(pady=10)
+
+    tk.Button(
+        root, text="Add Questions", font=("Arial", 16), bg=COLORS["dark_purple"], fg=COLORS["white"],
+        command=add_question
+    ).pack(pady=10)
+
+def start_game():
+    clear_window()
+    play_quiz()
+
+def play_quiz():
+    current_question_index = 0
+    score = 0
+
+    def next_question():
+        if current_question_index < len(questions):
+            question = questions[current_question_index]
+            question_label.config(text=question["question"])
+
+            def check_answer(user_answer):
+                nonlocal current_question_index, score
+                if user_answer == question["answer"]:
+                    score += 1
+                current_question_index += 1
+                next_question()
+
+            true_button.config(command=lambda: check_answer(True))
+            false_button.config(command=lambda: check_answer(False))
+        else:
+            show_result()
+
+    def show_result():
+        clear_window()
+
+        tk.Label(
+            root, text=f"Your score: {score}/{len(questions)}", font=("Arial", 24), bg=COLORS["cream"]
+        ).pack(pady=20)
+
+        if score > len(questions) // 2:
+            result_text = "True!"
+            color = COLORS["dark_purple"]
+        else:
+            result_text = "Treat!"
+            color = COLORS["orange"]
+
+        tk.Label(
+            root, text=result_text, font=("Arial", 32), fg=color
+        ).pack(pady=10)
+
+        if result_text == "Treat!":
+            tk.Label(
+                root, text=random.choice(treats), font=("Arial", 16), bg=COLORS["cream"]
+            ).pack(pady=10)
+
+        tk.Button(
+            root, text="Back to Menu", font=("Arial", 16), bg=COLORS["dark_purple"], fg=COLORS["white"],
+            command=show_main_menu
+        ).pack(pady=20)
+
+    question_label = tk.Label(root, text="", font=("Arial", 16), bg=COLORS["cream"])
+    question_label.pack(pady=20)
+
+    true_button = tk.Button(root, text="True", font=("Arial", 16), bg=COLORS["dark_purple"], fg=COLORS["white"])
+    true_button.pack(pady=10)
+
+    false_button = tk.Button(root, text="False", font=("Arial", 16), bg=COLORS["dark_purple"], fg=COLORS["white"])
+    false_button.pack(pady=10)
+
+    next_question()
+
+
+def add_question():
+    clear_window()
+
+    tk.Label(root, text="Add a Question", font=("Arial", 24), bg=COLORS["cream"]).pack(pady=20)
+
+    question_entry = tk.Entry(root, font=("Arial", 16))
+    question_entry.pack(pady=10)
+
+    answer_var = tk.BooleanVar()
+    tk.Radiobutton(root, text="True", variable=answer_var, value=True).pack()
+    tk.Radiobutton(root, text="False", variable=answer_var, value=False).pack()
+
+    def save_question():
+        question_text = question_entry.get()
+        answer = answer_var.get()
+        if question_text:
+            questions.append({"question": question_text, "answer": answer})
+            messagebox.showinfo("Success", "Question added successfully!")
+            show_main_menu()
+        else:
+            messagebox.showerror("Error", "Please enter a question!")
+
+    tk.Button(
+        root, text="Save", font=("Arial", 16), bg=COLORS["dark_purple"], fg=COLORS["white"],
+        command=save_question
+    ).pack(pady=10)
+
+
+def clear_window():
+    for widget in root.winfo_children():
+        widget.destroy()
+
+# Antarmuka utama
+root = tk.Tk()
+root.title("True or Treat")
+root.geometry("600x400")
+root.configure(bg=COLORS["cream"])
+
+# Halaman login/register
+tk.Label(root, text="True or Treat", font=("Arial", 24), bg=COLORS["cream"]).pack(pady=20)
+
+tk.Label(root, text="Username:", font=("Arial", 16), bg=COLORS["cream"]).pack()
+username_entry = tk.Entry(root, font=("Arial", 16))
+username_entry.pack(pady=5)
+
+tk.Label(root, text="Password:", font=("Arial", 16), bg=COLORS["cream"]).pack()
+password_entry = tk.Entry(root, font=("Arial", 16), show="*")
+password_entry.pack(pady=5)
+
+tk.Button(
+    root, text="Register", font=("Arial", 16), bg=COLORS["dark_purple"], fg=COLORS["white"], command=register
+).pack(pady=10)
+
+tk.Button(
+    root, text="Login", font=("Arial", 16), bg=COLORS["dark_purple"], fg=COLORS["white"], command=login
+).pack(pady=10)
+
+root.mainloop()
 
